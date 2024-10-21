@@ -37,7 +37,7 @@ ul {
   list-style: none;
 }
 #hero {
-  background-image: url(../img/hero.jpg);
+  background-image: url(../../img/hero.jpg);
   height: 350px;
   background-size: cover;
 }
@@ -91,7 +91,7 @@ ul {
   display: block;
   text-indent: -9999px;
   width: 50px;
-  background-image: url(../img/lupa.png);
+  background-image: url(../../img/lupa.png);
   background-position: right center;
   background-repeat: no-repeat;
   border: none;
@@ -126,13 +126,13 @@ ul {
   }
 }
 .icono1 {
-  background-image: url(../img/icono1.png);
+  background-image: url(../../img/icono1.png);
 }
 .icono2 {
-  background-image: url(../img/icono2.png);
+  background-image: url(../../img/icono2.png);
 }
 .icono3 {
-  background-image: url(../img/icono3.png);
+  background-image: url(../../img/icono3.png);
 }
 
 #lista-cursos .row {
@@ -179,4 +179,18 @@ ul {
   display: block;
   margin-bottom: 10px;
   text-decoration: none;
+}
+.carrito-item {
+  display: flex;
+  flex-direction: row;
+  max-height: 50px;
+  justify-content: space-between;
+}
+.carrito-img {
+  max-width: 50px;
+  max-height: 50px;
+}
+.remove-icon{
+  max-width: 25px;
+  max-height: 25px;
 }
