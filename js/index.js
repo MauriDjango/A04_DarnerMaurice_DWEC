@@ -2,27 +2,43 @@ const carritoDiv = document.querySelector("#lista-carrito")
 const listaCarritoBody = carritoDiv.querySelector("tbody")
 const listaCursosDiv = document.querySelector("#lista-cursos")
 const vaciarButton = document.querySelector("#vaciar-carrito")
-let carrito = {}
+const localMem = {
+  _carrito: JSON.parse(localStorage.getItem('carrito')) || {},
+  get carrito() {
+    return this._carrito
+  },
+  set carrito(value) {
+    localStorage.setItem('carrito', JSON.stringify(value))
+  }
+}
 
-listaCursosDiv.addEventListener("click", handleClickAgregar)
-vaciarButton.addEventListener("click", handleClickVaciar)
-listaCarritoBody.addEventListener("click", handleClickListaCarritoBody)
+// EVENT LISTENERS -------------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadListeners()
+  createCarritoHTML(localMem.carrito)
+})
+
+function loadListeners() {
+  listaCursosDiv.addEventListener("click", handleClickAgregar)
+  vaciarButton.addEventListener("click", handleClickVaciar)
+  listaCarritoBody.addEventListener("click", handleClickListaCarritoBody)
+}
 
 function handleClickListaCarritoBody(e) {
   if (e.target.id === "remove-item") {
     const cursoName = e.target.dataset.id
 
     removeCarritoItem(cursoName)
-
-    listaCarritoBody.innerHTML = createCarritoHTML(carrito)
+    createCarritoHTML(localMem.carrito)
   }
 }
 
 function handleClickVaciar(e) {
   e.preventDefault()
 
-  listaCarritoBody.innerHTML = ""
-  carrito = {}
+  cleanListaCompra()
+  localMem.carrito = {}
 }
 
 function handleClickAgregar(e) {
@@ -34,21 +50,25 @@ function handleClickAgregar(e) {
     curso.querySelector("h4").innerText,
     curso.querySelector("span").innerHTML
   )
-  updateCarrito(carritoItem)
+  addCarritoItem(carritoItem)
 
-  listaCarritoBody.innerHTML = createCarritoHTML(carrito)
+  updateListaCompra()
 }
 
-function updateCarrito(carritoItem) {
-  carrito[carritoItem.name] ?
-    carrito[carritoItem.name].quantity++
-    : carrito[carritoItem.name] = carritoItem;
+// MANIPULATE CARRITO OBJECT ---------------------------------------------------
+
+function addCarritoItem(carritoItem) {
+  localMem.carrito[carritoItem.name] ?
+    localMem.carrito[carritoItem.name].quantity++
+    : localMem.carrito[carritoItem.name] = carritoItem;
+  localMem.carrito = localMem.carrito
 }
 
 function removeCarritoItem(cursoName) {
-  carrito[cursoName].quantity - 1 <= 0 ?
-    delete carrito[cursoName]
-    : carrito[cursoName].quantity--;
+  localMem.carrito[cursoName].quantity - 1 <= 0 ?
+    delete localMem.carrito[cursoName]
+    : localMem.carrito[cursoName].quantity--;
+  localMem.carrito = localMem.carrito
 }
 
 function createCarritoItem(imgSrc, name, price) {
@@ -57,28 +77,65 @@ function createCarritoItem(imgSrc, name, price) {
     name,
     price,
     quantity: 1,
-  };
+  }
+}
+
+// MANIPULATE OF HTML ELEMENTS -------------------------------------------------
+
+function updateListaCompra() {
+  cleanListaCompra()
+  createCarritoHTML(localMem.carrito)
+}
+
+function cleanListaCompra() {
+  while (listaCarritoBody.firstChild) {
+    listaCarritoBody.removeChild(listaCarritoBody.firstChild)
+  }
 }
 
 function createCarritoHTML(carrito) {
-  // Iterate over the object using Object.values() to get an array of items
-  return Object.values(carrito).map(carritoItem => `
-    <tr>
-        <th>
-            <img src="${carritoItem.imgSrc}" class="carrito-img" alt="No image found"></img>
-        </th>
-        <th>
-            <p>${carritoItem.name}</p>
-        </th> 
-        <th>
-            <p>${carritoItem.price}</p>
-        </th>
-        <th>
-            <p>${carritoItem.quantity}</p>
-        </th>
-        <th>
-          <img class="remove-icon" src="../assets/img/remove.png" alt="Image not found" id="remove-item" data-id="${carritoItem.name}">
-        </th>
-    </tr>`
-  ).join(''); // Combine all the HTML strings into one
+  cleanListaCompra()
+  for (let item of Object.values(carrito)) {
+  listaCarritoBody.appendChild(createCarritoRow(item))
+  }
+}
+
+function createCarritoRow(carritoItem) {
+  const row = document.createElement('tr')
+  row.appendChild(createTableRowImage(carritoItem.imgSrc))
+  row.appendChild(createTableRowText(carritoItem.name))
+  row.appendChild(createTableRowText(carritoItem.price))
+  row.appendChild(createTableRowText(carritoItem.quantity))
+  row.appendChild(createTableRowRemove('../assets/img/remove.png', carritoItem.name))
+  return row
+}
+
+function createTableRowImage(imgSrc) {
+  const cell = document.createElement('th')
+  const  element = document.createElement('img')
+  element.src = imgSrc
+  element.alt = "Image not found"
+  element.classList.add('carrito-img')
+  cell.appendChild(element)
+  return cell
+}
+
+function createTableRowRemove (imgSrc, itemName) {
+  const cell = document.createElement('th')
+  const element = document.createElement('img')
+  element.src = imgSrc
+  element.alt = "Image not found"
+  element.classList.add('remove-icon')
+  element.id ='remove-item'
+  element.dataset.id = itemName
+  cell.appendChild(element)
+  return cell
+}
+
+function createTableRowText(textContent) {
+  const cell = document.createElement('th')
+  const element = document.createElement('p')
+  element.innerText = textContent
+  cell.appendChild(element)
+  return cell
 }
